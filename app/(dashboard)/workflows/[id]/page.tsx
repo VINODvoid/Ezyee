@@ -1,3 +1,5 @@
+import { WorkflowShell } from "@/features/workflows/components/workflow-shell"
+
 export default async function WorkflowPage({
   params,
 }: {
@@ -5,11 +7,5 @@ export default async function WorkflowPage({
 }) {
   const { id } = await params
 
-  return (
-    <div className="flex min-h-svh items-center justify-center p-6">
-      <p className="font-mono text-sm">
-        Workflow ID: <span className="text-muted-foreground">{id}</span>
-      </p>
-    </div>
-  )
+  return <WorkflowShell workflowId={id} />
 }
