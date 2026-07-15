@@ -1,8 +1,14 @@
-import { pgTable, serial, text, timestamp } from "drizzle-orm/pg-core"
+import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
 
-// Starter schema — replace with the real workflow model when you design it.
 export const workflows = pgTable("workflows", {
-  id: serial("id").primaryKey(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  orgId:text("org_id").notNull(),
   name: text("name").notNull(),
+  graph: jsonb("graph").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 })
+
+export type Workflow = typeof workflows.$inferSelect
+
+

@@ -1,5 +1,6 @@
 "use client"
 
+import { useTransition } from "react"
 import { Plus, Workflow } from "lucide-react"
 
 import {
@@ -18,26 +19,21 @@ import {
   SidebarSeparator,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { generateSlug } from "@/features/workflows/lib/generate-slug"
+import type { Workflow as WorkflowRow } from "@/lib/db/schema"
 
-const workflows = [
-  "dominant-wasp",
-  "honest-reindeer",
-  "expected-llama",
-  "essential-ocelot",
-  "creepy-echidna",
-  "eastern-silkworm",
-  "cultural-lion",
-  "proud-weasel",
-  "regional-bonobo",
-]
+type WorkflowNavProps = {
+  workflows: WorkflowRow[]
+  createWorkflowAction: (name: string) => Promise<void>
+}
 
-function WorkflowList() {
+function WorkflowList({ workflows }: { workflows: WorkflowRow[] }) {
   return (
     <SidebarMenu className="space-y-1">
-      {workflows.map((workflow, index) => (
-        <SidebarMenuItem key={workflow}>
-          <SidebarMenuButton isActive={index === 0}>
-            <span>{workflow}</span>
+      {workflows.map((workflow) => (
+        <SidebarMenuItem key={workflow.id}>
+          <SidebarMenuButton>
+            <span>{workflow.name}</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
@@ -45,8 +41,18 @@ function WorkflowList() {
   )
 }
 
-export function WorkflowNav() {
+export function WorkflowNav({
+  workflows,
+  createWorkflowAction,
+}: WorkflowNavProps) {
   const { state } = useSidebar()
+  const [isPending, startTransition] = useTransition()
+
+  const handleCreate = () => {
+    startTransition(async () => {
+      await createWorkflowAction(generateSlug())
+    })
+  }
 
   if (state === "collapsed") {
     return (
@@ -64,14 +70,17 @@ export function WorkflowNav() {
                 <PopoverContent side="right" align="start">
                   <SidebarMenu>
                     <SidebarMenuItem>
-                      <SidebarMenuButton>
+                      <SidebarMenuButton
+                        onClick={handleCreate}
+                        disabled={isPending}
+                      >
                         <Plus />
                         <span>New workflow</span>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   </SidebarMenu>
                   <SidebarSeparator className="mx-0" />
-                  <WorkflowList />
+                  <WorkflowList workflows={workflows} />
                 </PopoverContent>
               </Popover>
             </SidebarMenuItem>
@@ -84,12 +93,16 @@ export function WorkflowNav() {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>Workflows</SidebarGroupLabel>
-      <SidebarGroupAction title="New workflow">
+      <SidebarGroupAction
+        title="New workflow"
+        onClick={handleCreate}
+        disabled={isPending}
+      >
         <Plus />
         <span className="sr-only">New workflow</span>
       </SidebarGroupAction>
       <SidebarGroupContent>
-        <WorkflowList />
+        <WorkflowList workflows={workflows} />
       </SidebarGroupContent>
     </SidebarGroup>
   )
