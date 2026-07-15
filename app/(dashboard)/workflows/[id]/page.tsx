@@ -1,9 +1,11 @@
+import { auth } from "@clerk/nextjs/server"
+import { ReactFlowProvider } from "@xyflow/react"
+import { notFound } from "next/navigation"
+
 import { Room } from "@/features/workflows/components/room"
 import { WorkflowShell } from "@/features/workflows/components/workflow-shell"
 import { getWorkflow } from "@/features/workflows/data"
 import { liveblocks } from "@/lib/liveblocks"
-import { auth } from "@clerk/nextjs/server"
-import { notFound } from "next/navigation"
 
 export default async function WorkflowPage({
   params,
@@ -26,8 +28,12 @@ export default async function WorkflowPage({
   })
 
   return (
-    <Room roomId={id}>
-      <WorkflowShell workflowId={id} />
-    </Room>
+    // One React Flow store above both the canvas and the sidebar palette so
+    // they share the same nodes/edges instance.
+    <ReactFlowProvider>
+      <Room roomId={id}>
+        <WorkflowShell workflowId={id} />
+      </Room>
+    </ReactFlowProvider>
   )
 }
