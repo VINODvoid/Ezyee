@@ -5,12 +5,15 @@ import { nodeRegistry, type StepNodeType } from "@/features/workflows/nodes/node
 import { cn } from "@/lib/utils"
 
 function StepNodeComponent({ data, selected }: NodeProps<StepNodeType>) {
-  const { type, kind, title } = data
+  const { type, kind, title, values } = data
   const def = nodeRegistry[type]
   const Icon = def.icon
 
   // A trigger starts the flow and takes no input, so it has no target handle.
   const hasTarget = kind !== "trigger"
+
+  // Only surface fields the user has actually filled in.
+  const filledFields = def.fields.filter((field) => values[field.key])
 
   return (
     <div
@@ -39,6 +42,19 @@ function StepNodeComponent({ data, selected }: NodeProps<StepNodeType>) {
         </div>
         <span className="text-sm font-semibold">{title}</span>
       </div>
+
+      {filledFields.length > 0 && (
+        <div className="flex flex-col gap-1.5 border-t border-border px-3 py-2">
+          {filledFields.map((field) => (
+            <div key={field.key} className="flex min-w-0 flex-col gap-0.5">
+              <span className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                {field.label}
+              </span>
+              <span className="truncate text-xs">{values[field.key]}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <Handle
         type="source"

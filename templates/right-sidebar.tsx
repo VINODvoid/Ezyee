@@ -30,6 +30,7 @@ import {
   type StepNodeKind,
   type StepNodeType,
 } from "@/features/workflows/nodes/node-registry"
+import { useReactFlow, useStore } from "@xyflow/react"
 
 // This file builds up to the RightSidebar component exported at the bottom: a
 // header with workflow actions (delete, run), then two tabs — a Toolbar for
@@ -105,6 +106,7 @@ function FieldInput({
 
 // The Editor tab: one input per field on the selected node, or an empty state.
 function Inspector({ node }: { node: StepNodeType | undefined }) {
+  const {updateNodeData} = useReactFlow<StepNodeType>()
   if (!node) {
     return (
       <Section title="Editor">
@@ -132,7 +134,9 @@ function Inspector({ node }: { node: StepNodeType | undefined }) {
                 value={values[field.key] ?? ""}
                 onChange={(value) => {
                   // TODO: save the edit back onto the selected node.
-                  void value
+                  updateNodeData(node.id, {
+                    values:{...values,[field.key]:value}
+                  })
                 }}
               />
             </div>
@@ -254,7 +258,7 @@ export function RightSidebar() {
   const [tab, setTab] = useState("toolbar")
 
   // TODO: read the currently selected node from React Flow.
-  const selected: StepNodeType | undefined = undefined
+  const selected = useStore((s)=> s.nodes.find((n)=>n.selected )) as StepNodeType | undefined
 
   // TODO: auto-switch to the Editor tab when the selection changes.
 

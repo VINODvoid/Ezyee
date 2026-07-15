@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useReactFlow, useStore } from "@xyflow/react"
+import { useEffect, useState } from "react"
+import { useNodes, useReactFlow, useStore } from "@xyflow/react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -107,6 +107,8 @@ function FieldInput({
 
 // The Editor tab: one input per field on the selected node, or an empty state.
 function Inspector({ node }: { node: StepNodeType | undefined }) {
+  const { updateNodeData } = useReactFlow<StepNodeType>()
+
   if (!node) {
     return (
       <Section title="Editor">
@@ -132,10 +134,11 @@ function Inspector({ node }: { node: StepNodeType | undefined }) {
               <FieldInput
                 field={field}
                 value={values[field.key] ?? ""}
-                onChange={(value) => {
-                  // TODO: save the edit back onto the selected node.
-                  void value
-                }}
+                onChange={(value) =>
+                  updateNodeData(node.id, {
+                    values: { ...values, [field.key]: value },
+                  })
+                }
               />
             </div>
           ))
@@ -290,10 +293,14 @@ function RunButton() {
 export function RightSidebar() {
   const [tab, setTab] = useState("toolbar")
 
-  // TODO: read the currently selected node from React Flow.
-  const selected: StepNodeType | undefined = undefined
+  // The currently selected node, read from the shared React Flow store.
+  const nodes = useNodes<StepNodeType>()
+  const selected = nodes.find((node) => node.selected)
 
-  // TODO: auto-switch to the Editor tab when the selection changes.
+  // Auto-switch to the Editor tab when a node becomes selected.
+  useEffect(() => {
+    if (selected) setTab("editor")
+  }, [selected?.id])
 
   return (
     <ResizablePanel
