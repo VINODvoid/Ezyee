@@ -22,6 +22,7 @@ export default async function WorkflowPage({
   await liveblocks.getOrCreateRoom(id, {
     defaultAccesses: [],
     groupsAccesses: { [orgId]: ["room:write"] },
+    organizationId:orgId
   })
 
   return (

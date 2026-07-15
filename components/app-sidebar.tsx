@@ -21,6 +21,10 @@ export async function AppSidebar() {
       <SidebarHeader className="flex-row items-center justify-between gap-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0">
         <div className="min-w-0 group-data-[collapsible=icon]:hidden">
           <OrganizationSwitcher
+          afterCreateOrganizationUrl="/"
+          afterSelectOrganizationUrl="/"
+          afterLeaveOrganizationUrl="/"
+
             hidePersonal
             appearance={{
               elements: {
