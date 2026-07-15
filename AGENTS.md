@@ -8,6 +8,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 Derive database types from the Drizzle schema — never hand-write custom or partial shapes for table rows. Export `typeof table.$inferSelect` (and `$inferInsert` when needed) from lib/schema.ts and import it. When a consumer needs only some columns, narrow with `Pick<Row, ...>` / `Omit<Row, ...>` rather than redeclaring a literal type. Don't add an insert type where `db.insert(...).values()` already enforces the shape.
 
+# React Flow (@xyflow/react)
+
+Don't rely on training data for React Flow APIs, props, hooks, or component usage — they change across versions. Before writing or changing any React Flow code, search the docs index at https://reactflow.dev/llms.txt and fetch the relevant page (append nothing / it links to per-page docs). Verify prop names, hook signatures, and component APIs against the current docs rather than assuming.
+
 # JSX text escaping
 
 Escape apostrophes and quotes in JSX text content — raw ' and " trip the react/no-unescaped-entities lint rule. Use &apos; for apostrophes and &quot; for quotes (e.g. you&apos;re, doesn&apos;t). This applies only to literal text between JSX tags, not to string attribute values or JS strings.
