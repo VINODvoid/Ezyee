@@ -31,7 +31,11 @@ export function WorkflowShell({ workflowId }: { workflowId: string }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="16rem" minSize="14rem" maxSize="36rem">
-        <RightSidebar tab={tab} onTabChange={setTab} />
+        <RightSidebar
+          tab={tab}
+          onTabChange={setTab}
+          workflowId={workflowId}
+        />
       </ResizablePanel>
     </ResizablePanelGroup>
   )

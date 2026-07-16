@@ -1,5 +1,6 @@
 "use client"
 
+import { useTransition } from "react"
 import { useNodes, useReactFlow, useStore } from "@xyflow/react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -24,6 +25,7 @@ import { ResizablePanel } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
+import { deleteWorkflowAction } from "@/features/workflows/actions"
 import {
   nodeRegistry,
   type NodeDefinition,
@@ -99,6 +101,7 @@ function Field({
     id: field.key,
     value,
     placeholder: field.placeholder,
+    required: field.required,
     onChange: (
       e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => onChange(e.target.value),
@@ -132,6 +135,7 @@ function Inspector({ node }: { node: StepNodeType | undefined }) {
             <div key={field.key} className="flex flex-col gap-1.5">
               <Label htmlFor={field.key} className="text-xs">
                 {field.label}
+                {field.required && <span className="text-destructive">*</span>}
               </Label>
               <Field
                 field={field}
@@ -248,7 +252,9 @@ function Palette() {
 // ---------------------------------------------------------------------------
 
 // The "..." menu for workflow-level actions.
-function ActionsMenu() {
+function ActionsMenu({ workflowId }: { workflowId: string }) {
+  const [isDeleting, startDeleting] = useTransition()
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -259,9 +265,14 @@ function ActionsMenu() {
       <DropdownMenuContent align="start" className="min-w-48">
         <DropdownMenuItem
           variant="destructive"
+          disabled={isDeleting}
           className="text-xs [&_svg:not([class*='size-'])]:size-3.5"
-          onSelect={() => {
-            // TODO: delete the workflow, then navigate away.
+          onSelect={(event) => {
+            // Keep the menu open so the item shows disabled while deleting.
+            event.preventDefault()
+            startDeleting(async () => {
+              await deleteWorkflowAction(workflowId)
+            })
           }}
         >
           <Trash2 />
@@ -295,9 +306,11 @@ function RunButton() {
 export function RightSidebar({
   tab,
   onTabChange,
+  workflowId,
 }: {
   tab: string
   onTabChange: (tab: string) => void
+  workflowId: string
 }) {
   // The currently selected node, read from the shared React Flow store.
   const nodes = useNodes<StepNodeType>()
@@ -313,7 +326,7 @@ export function RightSidebar({
     >
       <Tabs value={tab} onValueChange={onTabChange} className="size-full gap-0">
         <div className="flex items-center justify-between border-b border-border p-2">
-          <ActionsMenu />
+          <ActionsMenu workflowId={workflowId} />
           <RunButton />
         </div>
         <TabsList className="m-2 w-fit bg-background">
