@@ -1,3 +1,7 @@
+"use client"
+
+import { useState } from "react"
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -8,12 +12,14 @@ import { RightSidebar } from "@/features/workflows/components/right-sidebar"
 
 // This component sizes in rem, not percentages.
 export function WorkflowShell({ workflowId }: { workflowId: string }) {
+  const [tab, setTab] = useState("toolbar")
+
   return (
     <ResizablePanelGroup orientation="horizontal" className="size-full">
       <ResizablePanel minSize="30rem">
         <ResizablePanelGroup orientation="vertical">
           <ResizablePanel minSize="18rem">
-            <Canvas />
+            <Canvas onNodeClick={() => setTab("editor")} />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize="8rem" minSize="6rem">
@@ -25,7 +31,7 @@ export function WorkflowShell({ workflowId }: { workflowId: string }) {
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize="16rem" minSize="14rem" maxSize="36rem">
-        <RightSidebar />
+        <RightSidebar tab={tab} onTabChange={setTab} />
       </ResizablePanel>
     </ResizablePanelGroup>
   )

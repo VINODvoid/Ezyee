@@ -1,6 +1,5 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { useNodes, useReactFlow, useStore } from "@xyflow/react"
 import { MoreHorizontal, Play, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -20,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { ResizablePanel } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
@@ -84,8 +84,9 @@ function Section({
 // Editor tab — edits the fields of the selected node.
 // ---------------------------------------------------------------------------
 
-// A single editor field for a node property.
-function FieldInput({
+// A single editor field for a node property — a textarea when the field is
+// marked multi-line, otherwise a single-line input.
+function Field({
   field,
   value,
   onChange,
@@ -94,15 +95,16 @@ function FieldInput({
   value: string
   onChange: (value: string) => void
 }) {
-  // TODO: support a multiline field variant (textarea).
-  return (
-    <Input
-      id={field.key}
-      value={value}
-      placeholder={field.placeholder}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
+  const props = {
+    id: field.key,
+    value,
+    placeholder: field.placeholder,
+    onChange: (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => onChange(e.target.value),
+  }
+
+  return field.multiline ? <Textarea {...props} /> : <Input {...props} />
 }
 
 // The Editor tab: one input per field on the selected node, or an empty state.
@@ -131,7 +133,7 @@ function Inspector({ node }: { node: StepNodeType | undefined }) {
               <Label htmlFor={field.key} className="text-xs">
                 {field.label}
               </Label>
-              <FieldInput
+              <Field
                 field={field}
                 value={values[field.key] ?? ""}
                 onChange={(value) =>
@@ -290,17 +292,16 @@ function RunButton() {
 // The sidebar itself — header on top, then the Toolbar / Editor tabs.
 // ---------------------------------------------------------------------------
 
-export function RightSidebar() {
-  const [tab, setTab] = useState("toolbar")
-
+export function RightSidebar({
+  tab,
+  onTabChange,
+}: {
+  tab: string
+  onTabChange: (tab: string) => void
+}) {
   // The currently selected node, read from the shared React Flow store.
   const nodes = useNodes<StepNodeType>()
   const selected = nodes.find((node) => node.selected)
-
-  // Auto-switch to the Editor tab when a node becomes selected.
-  useEffect(() => {
-    if (selected) setTab("editor")
-  }, [selected?.id])
 
   return (
     <ResizablePanel
@@ -310,7 +311,7 @@ export function RightSidebar() {
       maxSize="36rem"
       groupResizeBehavior="preserve-pixel-size"
     >
-      <Tabs value={tab} onValueChange={setTab} className="size-full gap-0">
+      <Tabs value={tab} onValueChange={onTabChange} className="size-full gap-0">
         <div className="flex items-center justify-between border-b border-border p-2">
           <ActionsMenu />
           <RunButton />

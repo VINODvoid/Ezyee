@@ -8,6 +8,10 @@ export type NodeField = {
   key: string
   label: string
   placeholder?: string
+  // Render as a multi-line textarea instead of a single-line input.
+  multiline?: boolean
+  // Mark the field as required (shows a "*" on its label).
+  required?: boolean
 }
 
 // A node type's manifest entry. Add a node by adding an entry to nodeRegistry.

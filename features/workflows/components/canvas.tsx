@@ -52,7 +52,7 @@ function useMounted() {
   )
 }
 
-export function Canvas() {
+export function Canvas({ onNodeClick }: { onNodeClick?: () => void }) {
   const mounted = useMounted()
   const { resolvedTheme } = useTheme()
   const colorMode: ColorMode = mounted ? (resolvedTheme as ColorMode) : "dark"
@@ -73,6 +73,7 @@ export function Canvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={() => onNodeClick?.()}
         colorMode={colorMode}
         fitView
         connectionLineType={ConnectionLineType.SmoothStep}
