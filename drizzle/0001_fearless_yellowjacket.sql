@@ -1,0 +1,1 @@
+ALTER TABLE "workflows" ALTER COLUMN "graph" DROP NOT NULL;

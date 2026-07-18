@@ -25,7 +25,11 @@ import { ResizablePanel } from "@/components/ui/resizable"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
-import { deleteWorkflowAction } from "@/features/workflows/actions"
+import {
+  deleteWorkflowAction,
+  runWorkflowAction,
+} from "@/features/workflows/actions"
+import { validateGraph } from "@/features/workflows/lib/validate-graph"
 import {
   nodeRegistry,
   type NodeDefinition,
@@ -284,15 +288,34 @@ function ActionsMenu({ workflowId }: { workflowId: string }) {
 }
 
 // Kicks off a run of the current workflow.
-function RunButton() {
+function RunButton({ workflowId }: { workflowId: string }) {
+  const { getNodes, getEdges } = useReactFlow<StepNodeType>()
+  const [isRunning, startRunning] = useTransition()
+
+  const run = () => {
+    const graph = { nodes: getNodes(), edges: getEdges() }
+
+    // Pre-flight the in-hand graph so problems surface instantly. The action
+    // re-validates server-side before saving, so this is a UX shortcut only.
+    const problems = validateGraph(graph)
+    if (problems.length > 0) {
+      toast.error(problems.join(" "))
+      return
+    }
+
+    startRunning(async () => {
+      try {
+        await runWorkflowAction(workflowId, graph)
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Could not run workflow."
+        )
+      }
+    })
+  }
+
   return (
-    <Button
-      size="sm"
-      variant="secondary"
-      onClick={() => {
-        // TODO: validate the graph and run the workflow (toggle to Stop while running).
-      }}
-    >
+    <Button size="sm" variant="secondary" onClick={run} disabled={isRunning}>
       <Play fill="primary" />
       Run
     </Button>
@@ -327,7 +350,7 @@ export function RightSidebar({
       <Tabs value={tab} onValueChange={onTabChange} className="size-full gap-0">
         <div className="flex items-center justify-between border-b border-border p-2">
           <ActionsMenu workflowId={workflowId} />
-          <RunButton />
+          <RunButton workflowId={workflowId} />
         </div>
         <TabsList className="m-2 w-fit bg-background">
           <TabsTrigger

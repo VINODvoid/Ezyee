@@ -12,9 +12,23 @@ import { createWorkflowAction } from "@/features/workflows/actions"
 import { WorkflowNav } from "@/features/workflows/components/workflow-nav"
 import { listWorkflows } from "@/features/workflows/data"
 
+// The workflow list is not critical to the shell, so a transient database
+// failure (e.g. a Neon cold start) degrades to an empty list instead of
+// crashing the whole dashboard layout.
+async function safeListWorkflows(orgId: string | null | undefined) {
+  if (!orgId) return []
+
+  try {
+    return await listWorkflows(orgId)
+  } catch (error) {
+    console.error("Failed to load workflows for the sidebar:", error)
+    return []
+  }
+}
+
 export async function AppSidebar() {
   const { orgId } = await auth()
-  const workflows = orgId ? await listWorkflows(orgId) : []
+  const workflows = await safeListWorkflows(orgId)
 
   return (
     <Sidebar collapsible="icon" variant="inset">
